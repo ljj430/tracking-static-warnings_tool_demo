@@ -3,7 +3,7 @@
 ## General Information
 To run the tracking approach, you need to hava Java installed and Python 3 or later.  
 
-This tracking tool supports:
+This tracking tool supports static tools:
 * Spotbugs
 * PMD
 ## Build a jar
