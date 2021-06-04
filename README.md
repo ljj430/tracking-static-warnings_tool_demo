@@ -1,15 +1,14 @@
 # Tracking static warnings
-=================
 
-## Usage
+## General Information
 To run the tracking approach, you need to hava Java installed and Python 3 or later.
-
-### Build a jar
+    
+## Build a jar
     ./mvn clean install
     
-### Configure Git Hooks
-Copy the templates `pre-push` and `config.yml` into `<your-project>/.git/hooks`.
-Configure `config.yml`.
+## Configure git hooks
+Copy `pre-push` and `config.yml` from templates into `<your-project>/.git/hooks`.
+Edit to configure `config.yml`.
 
     local_repo_path: your project local path
     report_save_path: save directory path
@@ -19,8 +18,8 @@ Configure `config.yml`.
       name: static tool name
       compilation_command: Spotubgs only e.g., mvn clean install
       ruleset_path: PMD only 
-##
-Once you configure it, when your push code to repo, the Spotbugs/PMD will be run on your project of the lastest two revisions and the tracking approach will tell you the resolved static warnings and newly-introduced warnings.
+## Usage
+Once you put `pre-push` and `config.yml` in hooks, everytime your push code to repo, the Spotbugs/PMD will be run on your project of the lastest two revisions and the tracking approach will identify the resolved static warnings and newly-introduced warnings by comparing the static warnings from two revisions. You can use `git push --no-verify` to skip tracking process.
   
 
  
