@@ -1,8 +1,11 @@
 # Tracking static warnings
 
 ## General Information
-To run the tracking approach, you need to hava Java installed and Python 3 or later.
-    
+To run the tracking approach, you need to hava Java installed and Python 3 or later.  
+
+This tracking tool supports:
+* Spotbugs
+* PMD
 ## Build a jar
     ./mvn clean install
     
