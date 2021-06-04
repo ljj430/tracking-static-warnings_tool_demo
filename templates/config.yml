@@ -1,0 +1,31 @@
+# Example 1
+# local_repo_path: D:\tmp\jclouds
+# report_save_path: D:\tmp\saveFolder
+# remote_repo_url: https://github.com/jclouds/jclouds
+# tracking_jar_path: D:\tmp\tracking-static-warnings\target\tracking-static-warnings-1.0-SNAPSHOT.jar
+# static_tool: 
+#   name: Spotbugs
+#   compilation_command: mvn clean install
+
+
+# # Example 2
+# local_repo_path: D:\tmp\jclouds
+# report_save_path: D:\tmp\saveFolder
+# remote_repo_url: https://github.com/jclouds/jclouds
+# tracking_approach_jar_path: D:\tmp\tracking-static-warnings\target\tracking-static-warnings-1.0-SNAPSHOT.jar
+# static_tool: 
+#   name: PMD
+#   ruleset_path: D:\tmp\rulesets.xml
+
+
+# # Example 3
+# local_repo_path: D:\tmp\jclouds
+# report_save_path: D:\tmp\saveFolder
+# remote_repo_url: https://github.com/jclouds/jclouds
+# tracking_approach_jar_path: D:\tmp\tracking-static-warnings\target\tracking-static-warnings-1.0-SNAPSHOT.jar
+# static_tool: 
+#   name: All
+#   compilation_command: mvn clean install -DskipTests 
+#   ruleset_path: D:\tmp\rulesets.xml
+
+

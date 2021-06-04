@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+import argparse
+import sys,os
+import subprocess
+import yaml
+
+current_path = os.path.abspath(os.path.dirname(__file__))
+print("start to run post-receive")
+print("current path",current_path)
+yaml_path = os.path.join(current_path,"config.yml")
+
+with open(yaml_path,'r') as f:
+  tmp = yaml.load(f.read(), yaml.SafeLoader)
+  local_repo_path = tmp["local_repo_path"]
+  report_save_path = tmp["report_save_path"]
+  remote_repo_url = tmp["remote_repo_url"]
+  static_tool = tmp["static_tool"]["name"]
+  tracking_jar_path = tmp["tracking_jar_path"]
+
+  if static_tool == "Spotbugs":
+    compilation_command = tmp["static_tool"]["compilation_command"]
+    ruleset_path = " "
+  elif static_tool == "PMD":
+    compilation_command = " "
+    ruleset_path = tmp["static_tool"]["ruleset_path"]
+  elif static_tool == "All":
+    compilation_command = tmp["static_tool"]["compilation_command"]
+    ruleset_path = tmp["static_tool"]["ruleset_path"]
+
+command = f'java -jar "{tracking_jar_path}" "{static_tool}" "{local_repo_path}" "{report_save_path}" "{ruleset_path}" "{compilation_command}" "{remote_repo_url}"'
+print("command:",command)
+
+os.system(command)
+
+
+# if __name__ == "__main__":
