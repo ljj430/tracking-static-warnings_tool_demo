@@ -19,7 +19,7 @@ Edit to configure `config.yml`.
       compilation_command: Spotubgs only e.g., mvn clean install
       ruleset_path: PMD only 
 ## Usage
-Once you put `pre-push` and `config.yml` in hooks, everytime your push code to repo, the Spotbugs/PMD will be run on your project of the lastest two revisions and the tracking approach will identify the resolved static warnings and newly-introduced warnings by comparing the static warnings from two revisions. You can use `git push --no-verify` to skip tracking process.
+Once you put `pre-push` and `config.yml` in hooks, every time your push code to repo, the Spotbugs/PMD will be run on your project of the lastest two revisions and the tracking approach will identify the resolved static warnings and newly-introduced static warnings by comparing the static warnings from two revisions. You can use `git push --no-verify` to skip the tracking process.
   
 
  
