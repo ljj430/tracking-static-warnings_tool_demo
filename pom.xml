@@ -124,6 +124,12 @@
             <version>2.0.3</version>
         </dependency>
 
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
+
 
         <!--        &lt;!&ndash; https://mvnrepository.com/artifact/net.sf.saxon/Saxon-HE &ndash;&gt;-->
         <!--        <dependency>-->

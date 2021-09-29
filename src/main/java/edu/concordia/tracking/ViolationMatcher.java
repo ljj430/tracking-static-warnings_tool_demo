@@ -34,6 +34,14 @@ public class ViolationMatcher {
     protected static HashSet<BugInstanceCommit> chBugInstances = new HashSet<>();
     protected static int flag =1;
     public static ArrayList matcher(ArrayList<BugInstance> paVios, ArrayList<BugInstance> chVios, String paCommit, String chCommit, GitProxy gitproxy, String savePath, String staticTool, String githubUrl) throws IOException, GitAPIException {
+        paUnmatchedSet = new HashSet();
+        chUnmatchedSet = new HashSet();
+        paMatchedSet = new HashSet();
+        chMatchedSet = new HashSet();
+        chSourceMap = new HashMap();
+        hungarianMatrix = createGraph();
+        paBugInstances = new HashSet<>();
+        chBugInstances = new HashSet<>();
 
         paVios.forEach(value -> { paUnmatchedSet.add(value); });
         chVios.forEach(value -> { chUnmatchedSet.add(value); });
@@ -53,8 +61,8 @@ public class ViolationMatcher {
         HashMap<String, DiffEntry> diffMap = (HashMap<String, DiffEntry>) diffMapwithPaCh.get(2);
         //String = package +class = parentChangedPaths = childChangedPaths
 
-        HashMap<String,String> paSource = getAllSource(gitproxy, parentChangedPaths , diffMap, paCommit);
-        HashMap<String,String> chSource = getAllSource(gitproxy, childChangedPaths , diffMap, chCommit);
+        HashMap<String,String> paSource = getPaAllSource(gitproxy, parentChangedPaths , diffMap, paCommit);
+        HashMap<String,String> chSource = getChAllSource(gitproxy, childChangedPaths , diffMap, chCommit);
 
 
 //refactoring        ArrayList<RefactoringFormat> refactoringInfo = new RefactoringInfo().getRefactoringInfo(repoPath,githubPath, commit);
@@ -135,6 +143,14 @@ public class ViolationMatcher {
 
 
     public static ArrayList matcherRefactoring (ArrayList<BugInstance> paVios, ArrayList<BugInstance> chVios, String paCommit, String chCommit, GitProxy gitproxy, String repoPath, String savePath, String staticTool, String githubUrl) throws IOException, GitAPIException {
+        paUnmatchedSet = new HashSet();
+        chUnmatchedSet = new HashSet();
+        paMatchedSet = new HashSet();
+        chMatchedSet = new HashSet();
+        chSourceMap = new HashMap();
+        hungarianMatrix = createGraph();
+        paBugInstances = new HashSet<>();
+        chBugInstances = new HashSet<>();
 
         paVios.forEach(value -> { paUnmatchedSet.add(value); });
         chVios.forEach(value -> { chUnmatchedSet.add(value); });
@@ -154,22 +170,43 @@ public class ViolationMatcher {
         HashMap<String, DiffEntry> diffMap = (HashMap<String, DiffEntry>) diffMapwithPaCh.get(2);
         //String = package +class = parentChangedPaths = childChangedPaths
 
-        HashMap<String,String> paSource = getAllSource(gitproxy, parentChangedPaths , diffMap, paCommit);
-        HashMap<String,String> chSource = getAllSource(gitproxy, childChangedPaths , diffMap, chCommit);
+        HashMap<String,String> paSource = getPaAllSource(gitproxy, parentChangedPaths , diffMap, paCommit);
+        HashMap<String,String> chSource = getChAllSource(gitproxy, childChangedPaths , diffMap, chCommit);
 
 
         ArrayList<RefactoringFormat> refactoringInfo = (ArrayList<RefactoringFormat>) new RefactoringInfo().getRefactoringInfo(repoPath,githubUrl, chCommit);
 
-
+        int trackFlag = 0;
+        System.out.println(parentChangedPaths);
         for(BugInstance pa: paUnmatchedSet){
+            if(pa.getClassName().equals("ApplyFunctionExpr")){
+                trackFlag = 1;
+                System.out.println("Change the flag");
+            }
+            else{
+                trackFlag = 0;
+            }
+
 
             String paPath = pa.getClassPath();
+            if(trackFlag == 1) {
+                System.out.println(pa.getClassPath());
+                System.out.println(pa.getClassName());
+            }
             //if class files are unchanged
             if(!parentChangedPaths.contains(paPath)) {
+
                 //exact matching
                 BugInstance childMatched = exactMatch(pa, chUnmatchedSet);
-                paMatchedSet.add(pa);
-                chMatchedSet.add(childMatched);
+                if(childMatched != null){
+                    paMatchedSet.add(pa);
+                    chMatchedSet.add(childMatched);
+                }
+
+//                if(trackFlag == 1){
+//                    System.out.println(pa);
+//                    System.out.println(childMatched);
+//                }
             }
 
         }
@@ -177,8 +214,8 @@ public class ViolationMatcher {
         chUnmatchedSet.removeAll(chMatchedSet);
 
         //locaion and snippet
+
         for(BugInstance pa: paUnmatchedSet){
-            flag = 1;
             DiffEntry d = diffMap.get(pa.getClassPath());
             BugInstance paRefactoring = (BugInstance) pa.clone();
             ArrayList refactoringInfoRutrun = getPaRefactoring(paRefactoring,refactoringInfo);
@@ -186,26 +223,23 @@ public class ViolationMatcher {
             String sourcePath = (String) refactoringInfoRutrun.get(1);
             String refactoringType = (String) refactoringInfoRutrun.get(2);
 
-            if(!paRefactoring.equals(pa)){
-                flag = 2;
-//                System.out.println("different!\npaRefactoring:\n"+paRefactoring+"\npa:\n"+pa);
-//                System.out.println(refactoringType);
-//                System.out.println();
-            }
-
 
             ArrayList<Edit> edits = new ArrayList(gitproxy.getEditList(d));
-            HashSet<BugInstance> locationMatched = locationMatch(paRefactoring,chUnmatchedSet,edits);
-//            if(flag ==2 ){
-//                System.out.println("locationMatched:"+locationMatched.size());
-//            }
-            for(BugInstance ch:locationMatched){
-                BugInstanceCommit paCom = new BugInstanceCommit(pa , paCommit);
-                BugInstanceCommit chCom = new BugInstanceCommit(ch , chCommit);
-                paBugInstances.add(paCom);
-                chBugInstances.add(chCom);
-                hungarianMatrix = addWeightedEdge(hungarianMatrix,paCom,chCom);
+
+            if(d.getChangeType() != DiffEntry.ChangeType.RENAME){
+                HashSet<BugInstance> locationMatched = locationMatch(paRefactoring,chUnmatchedSet,edits);
+                for(BugInstance ch:locationMatched){
+                    BugInstanceCommit paCom = new BugInstanceCommit(pa , paCommit);
+                    BugInstanceCommit chCom = new BugInstanceCommit(ch , chCommit);
+                    paBugInstances.add(paCom);
+                    chBugInstances.add(chCom);
+                    hungarianMatrix = addWeightedEdge(hungarianMatrix,paCom,chCom);
+                }
+                if(trackFlag ==1 ){
+                    System.out.println("location matched:"+ locationMatched.size());
+                }
             }
+
 
             HashSet<BugInstance> snippetMatched = new HashSet();
             HashSet<BugInstance> candidates = new HashSet();
@@ -215,10 +249,9 @@ public class ViolationMatcher {
                 }
             }
             if(candidates.size()>0){
-                if(d.getChangeType() == DiffEntry.ChangeType.DELETE){
+                if(d.getChangeType() == DiffEntry.ChangeType.DELETE ||  d.getChangeType() == DiffEntry.ChangeType.RENAME){
                     String parentSnippet = getLineRange(Integer.parseInt(pa.getStartLine()), Integer.parseInt(pa.getEndLine()),paSource.get(d.getOldPath()));
                     parentSnippet = parentSnippet.replace(" ","");
-//                    System.out.println("pa:\n"+parentSnippet);
                     for(BugInstance ca:candidates){
                         DiffEntry dCa = diffMap.get(ca.getClassPath());
                         String childSnippet = getLineRange(Integer.parseInt(ca.getStartLine()), Integer.parseInt(ca.getEndLine()),chSource.get(dCa.getNewPath()));
@@ -228,7 +261,22 @@ public class ViolationMatcher {
                             snippetMatched.add(ca);
                         }
                     }
+                    if(trackFlag ==1 ){
+                        System.out.println("sni matched:"+ snippetMatched.size());
+                    }
                 }
+//                else if(d.getChangeType() == DiffEntry.ChangeType.RENAME){
+//                    String parentSnippet = getLineRange(Integer.parseInt(pa.getStartLine()), Integer.parseInt(pa.getEndLine()),paSource.get(d.getOldPath()));
+//                    parentSnippet = parentSnippet.replace(" ","");
+//                    for(BugInstance ca:candidates){
+//                        DiffEntry dCa = diffMap.get(ca.getClassPath());
+//                        String childSnippet = getLineRange(Integer.parseInt(ca.getStartLine()), Integer.parseInt(ca.getEndLine()),chSource.get(dCa.getNewPath()));
+//                        childSnippet = childSnippet.replace(" ","");
+//                        if(childSnippet.equals(parentSnippet)){
+//                            snippetMatched.add(ca);
+//                        }
+//                    }
+//                }
                 else {
 
                     String parentSnippet = getLineRange(Integer.parseInt(pa.getStartLine()), Integer.parseInt(pa.getEndLine()),paSource.get(d.getNewPath()));
@@ -269,8 +317,11 @@ public class ViolationMatcher {
         BugInstance output = new BugInstance();
         if(childSet.contains(pa)){
             output = pa;
+            return output;
         }
-        return output;
+        else
+            return null;
+
     }
 
     public static HashSet<BugInstance> locationMatch(BugInstance pa, HashSet<BugInstance> childSet, ArrayList<Edit> edits){

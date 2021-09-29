@@ -4,8 +4,9 @@ import edu.concordia.git.GitProxy;
 import edu.concordia.spotbugs.CsvBugReporter;
 import edu.umd.cs.findbugs.TextUIBugReporter;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -14,7 +15,9 @@ import java.util.ArrayList;
 
 import static edu.concordia.pmd.PMDRunner.runPMD;
 import static edu.concordia.spotbugs.SpotbugsRunner.runSpotbugs;
-import static edu.concordia.tracking.ViolationMatcher.*;
+import static edu.concordia.tracking.ViolationMatcher.initGitRepo;
+import static edu.concordia.tracking.ViolationMatcher.matcherRefactoring;
+import static edu.concordia.tracking.WriterRecordedCSV.appendCSV;
 
 public class Main {
     private static String OS = System.getProperty("os.name").toLowerCase();
@@ -38,26 +41,8 @@ public class Main {
             String paCommit = "";
             String chCommit = "";
 
-            //Debug
-//            String staticTool = "Spotbugs";
-//            String projectPath = "D:\\ThesisProject\\trackingProjects\\jclouds";
-//            String projectPath = "D:\\ThesisProject\\trackingProjects\\jclouds";
-//            String savePath = "D:\\Git\\tmp";
-//            String rulesetPath = " ";
-//            String compilerCommand = "mvn clean install -DskipTests";
-//            String githubURL = " ";
-
             Path gitPath = Paths.get(projectPath, ".git");
             String gitProxyPath = gitPath.toString();
-//            String gitProxyPath = "D:\\ThesisProject\\trackingProjects\\jclouds\\.git";
-//            gitProxyPath = "D:\\Git\\toyProject\\.git";
-//            String savePath = "D:\\Git\\tmp";
-
-//        ArrayList paVios = ViolationReader.Reader(paPath);
-//        ArrayList chVios = ViolationReader.Reader(chPath);
-
-
-
             GitProxy repoProxy = new GitProxy();
             Boolean initGit = initGitRepo(gitProxyPath);
             repoProxy.setURI(gitProxyPath);
@@ -65,15 +50,19 @@ public class Main {
 //            matcher(paVios,chVios,paCommit,chCommit,repoProxy,savePath);
                 Iterable<RevCommit> commits = repoProxy.getLogAll();
                 int count = 0;
+
+                Repository repo = repoProxy.getRepository();
+
                 for (RevCommit commit : commits) {
                     if (count == 0) {
-                        if (commit.getParentCount() > 1) {
+                        RevCommit[] parents = commit.getParents();
+
+                        if (commit.getParentCount() > 1 || parents == null) {
                             System.err.println("This commit has multiple parents");
                             break;
                         }
                         chCommit = commit.name();
-                    } else if (count == 1) {
-                        paCommit = commit.name();
+                        paCommit = commit.getParent(0).name();
                     }
                     count++;
                 }
@@ -81,6 +70,7 @@ public class Main {
                 System.out.println("pre-commit:"+paCommit);
 
                 Git git = new Git(repoProxy.getRepository());
+
 
 
                 String[] cmds = new String[]{};
@@ -95,7 +85,8 @@ public class Main {
                 else{
                     System.err.println("The system our approach does not support to compile files");
                 }
-
+                long staticTime = 0;
+                long startStatic = System.currentTimeMillis();
                 if(staticTool.equals("Spotbugs")){
                     git.checkout().setName(chCommit).call();
                     //compilation
@@ -186,6 +177,8 @@ public class Main {
                     reporter = new CsvBugReporter(spotbugsOut.toString());
                     runSpotbugs(projectPath, "" , reporter );
                     git.checkout().setName(chCommit).call();
+
+
                 }
                 else if (staticTool.equals("PMD")){
                     git.checkout().setName(chCommit).call();
@@ -195,6 +188,7 @@ public class Main {
                     savePMDPath = Paths.get(savePath, "PMD_"+paCommit+".csv");
                     runPMD(projectPath,rulesetPath,savePMDPath.toString());
                     git.checkout().setName(chCommit).call();
+
                 }
                 else if (staticTool.equals("All")){
                     git.checkout().setName(chCommit).call();
@@ -291,6 +285,8 @@ public class Main {
                     runPMD(projectPath,rulesetPath,savePMDPath.toString());
                     git.checkout().setName(chCommit).call();
                 }
+                long endStatic = System.currentTimeMillis();
+                staticTime = endStatic - startStatic;
 
                 //2. run tracking approach
                 String SpotbugsPaReport = "Spotbugs_" + paCommit+".csv";
@@ -302,6 +298,8 @@ public class Main {
                 Path PMDPaPath = Paths.get(savePath,PMDPaReport);
                 Path PMDChPath = Paths.get(savePath,PMDChReport);
 
+                long matchingTime = 0;
+                long startMatching = System.currentTimeMillis();
                 if(staticTool.equals("Spotbugs")) {
                     ArrayList paVios = ViolationReader.Reader(SpPaPath.toString());
                     ArrayList chVios = ViolationReader.Reader(SpChPath.toString());
@@ -325,6 +323,11 @@ public class Main {
                     System.out.println("Start to track on Spotbugs violations");
                     matcherRefactoring(paViosSpotbugs,chViosSpotbugs,paCommit,chCommit,repoProxy,projectPath,savePath,"Spotbugs",githubURL);
                 }
+                long endMatching = System.currentTimeMillis();
+                matchingTime = endMatching - startMatching;
+                String[] row = {projectPath,chCommit,Long.toString(staticTime), Long.toString(matchingTime)};
+                Path recordPath = Paths.get(savePath,"record.csv");
+                appendCSV(recordPath.toString(),row);
 
 
             }

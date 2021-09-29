@@ -45,6 +45,16 @@ public class TrackingUtils {
                 newPackage=oldPackage;
                 newClassName=oldClassName;
             }
+            else if(d.getChangeType() == DiffEntry.ChangeType.RENAME){
+                String oldSource = getSourceText(parentCommit,d.getOldPath(),gitproxy);
+                String newSource = getSourceText(childCommit,d.getNewPath(),gitproxy);
+                oldPackage = parseAndExtractPackagePath( oldSource  );
+                oldClassName = takeFileName(changePath);
+                String np = parseAndExtractPackagePath(newSource);
+                String nc = takeFileName(d.getNewPath());
+                newPackage=np;
+                newClassName=nc;
+            }
             else{
                 String oldSource = getSourceText(parentCommit,changePath,gitproxy);
                 oldPackage = parseAndExtractPackagePath( oldSource  );
@@ -85,9 +95,15 @@ public class TrackingUtils {
     }
 
     public static String parseAndExtractPackagePath(String source){
-        CompilationUnit cu = getCU(source);
-        String packageName = cu.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse("");
-        return packageName;
+        try{
+            CompilationUnit cu = getCU(source);
+            String packageName = cu.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse("");
+            return packageName;
+        }
+        catch (Exception e){
+            System.out.println(source);
+            return "";
+        }
     }
 
     public static String parseAndExtractPackagePathScala(String source){
@@ -249,13 +265,31 @@ public class TrackingUtils {
         return sb.toString();
     }
 
-    public static HashMap<String, String> getAllSource(GitProxy gitproxy, HashSet<String> changedPaths, HashMap<String,DiffEntry> diffMap, String commit) throws IOException {
+    public static HashMap<String, String> getPaAllSource(GitProxy gitproxy, HashSet<String> changedPaths, HashMap<String,DiffEntry> diffMap, String commit) throws IOException {
         HashMap<String, String> allSource = new HashMap();
 
 
         for(String path: changedPaths){
             DiffEntry d = diffMap.get(path);
             String changePath = d.getChangeType().equals(DiffEntry.ChangeType.DELETE) ? d.getOldPath() : d.getNewPath();
+            if(d.getChangeType().equals(DiffEntry.ChangeType.RENAME)){
+                changePath = d.getOldPath();
+            }
+            allSource.put(changePath,gitproxy.getFileContent(commit,changePath));
+        }
+        return allSource;
+    }
+
+    public static HashMap<String, String> getChAllSource(GitProxy gitproxy, HashSet<String> changedPaths, HashMap<String,DiffEntry> diffMap, String commit) throws IOException {
+        HashMap<String, String> allSource = new HashMap();
+
+
+        for(String path: changedPaths){
+            DiffEntry d = diffMap.get(path);
+            String changePath = d.getChangeType().equals(DiffEntry.ChangeType.DELETE) ? d.getOldPath() : d.getNewPath();
+            if(d.getChangeType().equals(DiffEntry.ChangeType.RENAME)){
+                changePath = d.getNewPath();
+            }
             allSource.put(changePath,gitproxy.getFileContent(commit,changePath));
         }
         return allSource;

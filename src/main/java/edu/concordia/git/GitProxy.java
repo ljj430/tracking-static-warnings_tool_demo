@@ -120,6 +120,7 @@ public class GitProxy {
         return true;
     }
 
+
     public void setURI(String in){
         this.uri=in;
     }

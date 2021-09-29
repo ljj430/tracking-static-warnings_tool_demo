@@ -39,6 +39,7 @@ public class SpotbugsRunner {
         findbugs.setMergeSimilarWarnings(true);
 
         findbugs.finishSettings();
+        System.out.println("Start to run Spotbugs");
         findbugs.execute();
     }
     public static void main(String args[]) throws Exception {
