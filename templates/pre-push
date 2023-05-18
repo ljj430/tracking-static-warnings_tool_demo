@@ -16,7 +16,7 @@ with open(yaml_path,'r') as f:
   report_save_path = tmp["report_save_path"]
   remote_repo_url = tmp["remote_repo_url"]
   static_tool = tmp["static_tool"]["name"]
-  tracking_jar_path = tmp["tracking_jar_path"]
+  tracking_jar_path = tmp["tracking_approach_jar_path"]
 
   if static_tool == "Spotbugs":
     compilation_command = tmp["static_tool"]["compilation_command"]

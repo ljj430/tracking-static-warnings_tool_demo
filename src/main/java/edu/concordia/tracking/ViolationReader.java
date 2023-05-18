@@ -33,6 +33,7 @@ public class ViolationReader {
             ins.setFieldName(row[4]);
             ins.setStartLine(row[5]);
             ins.setEndLine(row[6]);
+            ins.setSourcePath(row[7]);
             buginstanceList.add(ins);
         }
 

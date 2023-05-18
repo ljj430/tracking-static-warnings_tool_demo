@@ -43,9 +43,10 @@ public class SpotbugsRunner {
         findbugs.execute();
     }
     public static void main(String args[]) throws Exception {
+
         String files = "";
-        String targetFiles = "D:\\ThesisProject\\trackingProjects\\jclouds";
-        String outputPath = "D:\\Git\\tmp\\88c84af.csv";
+        String targetFiles = "/home/junjie/Desktop/tool_demo_StaticTracker/objects/source/guava";
+        String outputPath = "/home/junjie/Desktop/tool_demo_StaticTracker/results/tmp/violation_spotbugs.csv";
         TextUIBugReporter reporter = new CsvBugReporter(outputPath);
         runSpotbugs(targetFiles, files , reporter );
 

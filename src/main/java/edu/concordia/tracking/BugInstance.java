@@ -11,6 +11,7 @@ public class BugInstance implements Cloneable{
     private String classPath="";
     private String violation="";
     private Boolean isRefactoring=false;
+    private String sourcePath = "";
 
     public String getClassName() {
         return className;
@@ -60,6 +61,14 @@ public class BugInstance implements Cloneable{
         this.classPath = classPath;
     }
 
+    public String getSourcePath() {
+        return sourcePath;
+    }
+
+    public void setSourcePath(String sourcePath) {
+        this.sourcePath = sourcePath;
+    }
+
     public String getViolation() {
         return violation;
     }
@@ -105,6 +114,7 @@ public class BugInstance implements Cloneable{
                 ", classPath='" + classPath + '\'' +
                 ", violation='" + violation + '\'' +
                 ", isRefactoring=" + isRefactoring +
+                ", sourcePath=" + sourcePath +
                 '}';
     }
     @Override

@@ -13,7 +13,7 @@ import java.util.HashSet;
 
 public class TrackedViolationWriter {
     public static void writer(HashSet<BugInstance> pa, HashSet<BugInstance> ch, String path, String chCommit, String staticTool) throws IOException {
-        String resolvedName = "Resolved_"+staticTool+"_" + chCommit +".csv";
+        String resolvedName = "Disappeared_"+staticTool+"_" + chCommit +".csv";
         String newName = "NewlyIntroduced_"+staticTool+"_" + chCommit +".csv";
 
         Path resolvedPath = Paths.get(path,resolvedName);
@@ -23,14 +23,14 @@ public class TrackedViolationWriter {
         OutputStreamWriter osw1 = new OutputStreamWriter(fos1);
         CSVWriter w1 = new CSVWriter(osw1);
         ArrayList<String[]> rowsResolved = new ArrayList<>();
-        String[] header = new String[]{"Violation","Package","Class","Method","Field","StartLine","EndLine"};
+        String[] header = new String[]{"Violation","Package","Class","Method","Field","StartLine","EndLine","SourcePath"};
         rowsResolved.add(header);
         for(BugInstance ins : pa){
             String classPath = ins.getClassPath();
             String[] tokens = classPath.split("\\.");
             String className = tokens[tokens.length-1];
             String packageName = classPath.replace("."+className,"");
-            String[] row = new String[]{ins.getViolation(),packageName,className,ins.getMethodName(),ins.getFieldName(),ins.getStartLine(),ins.getEndLine()};
+            String[] row = new String[]{ins.getViolation(),packageName,className,ins.getMethodName(),ins.getFieldName(),ins.getStartLine(),ins.getEndLine(),ins.getSourcePath()};
             rowsResolved.add(row);
         }
         w1.writeAll(rowsResolved);
@@ -46,7 +46,7 @@ public class TrackedViolationWriter {
             String[] tokens = classPath.split("\\.");
             String className = tokens[tokens.length-1];
             String packageName = classPath.replace("."+className,"");
-            String[] row = new String[]{ins.getViolation(),packageName,className,ins.getMethodName(),ins.getFieldName(),ins.getStartLine(),ins.getEndLine()};
+            String[] row = new String[]{ins.getViolation(),packageName,className,ins.getMethodName(),ins.getFieldName(),ins.getStartLine(),ins.getEndLine(),ins.getSourcePath()};
             rowsNew.add(row);
         }
         w2.writeAll(rowsNew);

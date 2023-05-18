@@ -52,9 +52,9 @@ public class PMDRunner {
 //        String inputPath ="D:\\ThesisProject\\trackingProjects\\spring-boot\\buildSrc\\src\\main\\java\\org\\springframework\\boot\\build";
 
 
-        String inputPath ="D:\\Git\\test\\forked\\guava";
-        String rulesetPath = "D:\\ThesisProject\\findbugsanalysis\\FixPatternMining\\ruleset\\rulesets.xml";
-        String reportPath = "D:\\Git\\tmp\\695b_run.csv";
+        String inputPath ="/home/junjie/Desktop/tool_demo_StaticTracker/objects/source/guava";
+        String rulesetPath = "/home/junjie/Desktop/tool_demo_StaticTracker/ruleset/rulesets.xml";
+        String reportPath = "/home/junjie/Desktop/tool_demo_StaticTracker/results/tmp/violation_pmd.csv";
         runPMD(inputPath,rulesetPath,reportPath);
 
     }

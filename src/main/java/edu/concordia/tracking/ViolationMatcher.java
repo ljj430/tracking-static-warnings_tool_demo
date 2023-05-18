@@ -222,11 +222,17 @@ public class ViolationMatcher {
             paRefactoring = (BugInstance) refactoringInfoRutrun.get(0);
             String sourcePath = (String) refactoringInfoRutrun.get(1);
             String refactoringType = (String) refactoringInfoRutrun.get(2);
+            ArrayList<Edit> edits = new ArrayList();
+            try {
 
+                edits  = new ArrayList(gitproxy.getEditList(d));
+            }
 
-            ArrayList<Edit> edits = new ArrayList(gitproxy.getEditList(d));
+            catch (NullPointerException npe){
+                edits = new ArrayList();
+            }
 
-            if(d.getChangeType() != DiffEntry.ChangeType.RENAME){
+            if(edits.size() == 0 ||d.getChangeType() != DiffEntry.ChangeType.RENAME){
                 HashSet<BugInstance> locationMatched = locationMatch(paRefactoring,chUnmatchedSet,edits);
                 for(BugInstance ch:locationMatched){
                     BugInstanceCommit paCom = new BugInstanceCommit(pa , paCommit);
@@ -240,7 +246,11 @@ public class ViolationMatcher {
                 }
             }
 
+            // snippet matching
 
+            if (edits.size() == 0){
+                continue;
+            }
             HashSet<BugInstance> snippetMatched = new HashSet();
             HashSet<BugInstance> candidates = new HashSet();
             for(BugInstance ch:chUnmatchedSet){
@@ -248,6 +258,9 @@ public class ViolationMatcher {
                     candidates.add(ch);
                 }
             }
+
+
+
             if(candidates.size()>0){
                 if(d.getChangeType() == DiffEntry.ChangeType.DELETE ||  d.getChangeType() == DiffEntry.ChangeType.RENAME){
                     String parentSnippet = getLineRange(Integer.parseInt(pa.getStartLine()), Integer.parseInt(pa.getEndLine()),paSource.get(d.getOldPath()));
@@ -354,8 +367,7 @@ public class ViolationMatcher {
         }
         //pa not in edits
         else{
-            Edit editBegin = getMinimumEdit(edits);
-            if(Integer.parseInt(pa.getEndLine()) < editBegin.getBeginA()){  //no diff before pa
+            if (edits.size() == 0){
                 for(BugInstance ca: candidate1){
                     if(Math.abs(Integer.parseInt(ca.getStartLine()) - Integer.parseInt(pa.getStartLine())) <= MATCHING_THRESHOLD){
                         matchedCandidate.add(ca);
@@ -363,13 +375,24 @@ public class ViolationMatcher {
                 }
             }
             else{
-                Edit lastEdit = getLastEdit(Integer.parseInt(pa.getStartLine()),edits);
-                for(BugInstance ca : candidate1){
-                    if(Math.abs(Math.abs(Integer.parseInt(pa.getStartLine()) - lastEdit.getEndA()) - Math.abs(Integer.parseInt(ca.getStartLine()) - lastEdit.getEndB())) <= MATCHING_THRESHOLD){
-                        matchedCandidate.add(ca);
+                Edit editBegin = getMinimumEdit(edits);
+                if(Integer.parseInt(pa.getEndLine()) < editBegin.getBeginA()){  //no diff before pa
+                    for(BugInstance ca: candidate1){
+                        if(Math.abs(Integer.parseInt(ca.getStartLine()) - Integer.parseInt(pa.getStartLine())) <= MATCHING_THRESHOLD){
+                            matchedCandidate.add(ca);
+                        }
+                    }
+                }
+                else{
+                    Edit lastEdit = getLastEdit(Integer.parseInt(pa.getStartLine()),edits);
+                    for(BugInstance ca : candidate1){
+                        if(Math.abs(Math.abs(Integer.parseInt(pa.getStartLine()) - lastEdit.getEndA()) - Math.abs(Integer.parseInt(ca.getStartLine()) - lastEdit.getEndB())) <= MATCHING_THRESHOLD){
+                            matchedCandidate.add(ca);
+                        }
                     }
                 }
             }
+
         }
 
         return matchedCandidate;
@@ -381,15 +404,15 @@ public class ViolationMatcher {
     }
 
     public static void main(String[] args) throws IOException, GitAPIException {
-        String paPath = "D:\\Git\\tmp\\2a56db0.csv";
-        String chPath = "D:\\Git\\tmp\\09936b5.csv";
-        String paCommit = "2a56db09571164d94ddab1ec6f4a8a766e615acc";
-        String chCommit = "09936b57fc90b5a3c7fe530358a2c6a757c32839";
-        String gitProxyPath = "D:\\ThesisProject\\trackingProjects\\jclouds\\.git";
+        String paPath = "/home/junjie/Desktop/tool_demo_StaticTracker/results/guava/1/Spotbugs_1f3b5dc8e156ff0cfa025faabb55a4f77f0aec79.csv";
+        String chPath = "/home/junjie/Desktop/tool_demo_StaticTracker/results/guava/1/Spotbugs_c73686f9a4adb97830d940ecafc9c9021c2a7233.csv";
+        String paCommit = "1f3b5dc8e156ff0cfa025faabb55a4f77f0aec79";
+        String chCommit = "c73686f9a4adb97830d940ecafc9c9021c2a7233";
+        String gitProxyPath = "/home/junjie/Desktop/tool_demo_StaticTracker/objects/fork/guava/.git";
 //        gitProxyPath = "D:\\Git\\toyProject\\.git";
-        String savePath = "D:\\Git\\tmp";
-        String repoPath = "D:\\ThesisProject\\trackingProjects\\jclouds";
-        String repoURL = "https://github.com/jclouds/jclouds";
+        String savePath = "/home/junjie/Desktop/tool_demo_StaticTracker/results/tmp";
+        String repoPath = "/home/junjie/Desktop/tool_demo_StaticTracker/objects/fork/guava";
+        String repoURL = "https://github.com/ljj430/guava";
         String staticTool = "Spotbugs";
 
         ArrayList paVios = ViolationReader.Reader(paPath);

@@ -14,7 +14,11 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.refactoringminer.utils.RefactoringSet;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import javax.tools.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class TrackingUtils {
 
@@ -247,6 +251,36 @@ public class TrackingUtils {
         }
         return lastEdit;
     }
+
+
+//    public static String retrieveSourceCode(String classPath) throws IOException {
+//        // Get the class name from the class path
+//        String className = classPath.replace('.', '/') + ".java";
+//
+//        // Use Java Compiler API to retrieve the source code
+//        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+//        StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, StandardCharsets.UTF_8);
+//
+//        try {
+//            JavaFileObject javaFileObject = fileManager.getJavaFileForInput(
+//                    StandardLocation.CLASS_PATH, classPath, JavaFileObject.Kind.SOURCE);
+//            if (javaFileObject != null) {
+//                byte[] fileBytes = Files.readAllBytes(Paths.get(javaFileObject.toUri()));
+//                return new String(fileBytes, StandardCharsets.UTF_8);
+//            } else {
+//                throw new IOException("Source code not found for class: " + classPath);
+//            }
+//        } finally {
+//            fileManager.close();
+//        }
+//    }
+
+
+
+
+
+
+
 
     public static String getLineRange(int start, int end, String source){
         int counter = 1;

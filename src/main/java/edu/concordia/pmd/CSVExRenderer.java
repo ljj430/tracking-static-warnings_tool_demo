@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class CSVExRenderer extends AbstractIncrementingRenderer {
-
+    private String sysSeparator = System.getProperty("file.separator");
     private String separator;
     private String cr;
 
@@ -82,7 +82,22 @@ public class CSVExRenderer extends AbstractIncrementingRenderer {
         public String get(int idx, RuleViolation rv, String cr) {
             return Integer.toString(rv.getEndLine());
         }
+    }), new ColumnDescriptor("path", "SourcePath", new ColumnDescriptor.Accessor<RuleViolation>() {
+            @Override
+            public String get(int idx, RuleViolation rv, String cr) {
 
+//            return rv.getFilename();
+                String className = rv.getClassName();
+                int index = className.indexOf("$");
+                String subStr = "";
+                if(index == -1){
+                    subStr = className;
+                }
+                else{
+                    subStr = className.substring(0,index);
+                }
+                return rv.getPackageName().replaceAll("\\.",sysSeparator) + sysSeparator + subStr + ".java";
+            }
     }), new ColumnDescriptor("desc", "Description", new ColumnDescriptor.Accessor<RuleViolation>() {
         @Override
         public String get(int idx, RuleViolation rv, String cr) {
@@ -98,11 +113,6 @@ public class CSVExRenderer extends AbstractIncrementingRenderer {
         @Override
         public String get(int idx, RuleViolation rv, String cr) {
             return rv.getRule().getRuleSetName();
-        }
-    }), new ColumnDescriptor("path", "Path", new ColumnDescriptor.Accessor<RuleViolation>() {
-        @Override
-        public String get(int idx, RuleViolation rv, String cr) {
-            return rv.getFilename();
         }
     }),
     };
