@@ -16,7 +16,7 @@ Edit to configure `config.yml`.
     local_repo_path: your project local path
     report_save_path: save directory path
     remote_repo_url: your project remote repo url 
-    tracking_jar_path:  the tracking approach jar path e.g., ./target/tracking-static-warnings-1.0-SNAPSHOT.jar
+    tracking_approach_jar_path:  the tracking approach jar path e.g., ./target/tracking-static-warnings-1.0-SNAPSHOT.jar
     static_tool: 
       name: static tool name
       compilation_command: Spotubgs only e.g., mvn clean install
