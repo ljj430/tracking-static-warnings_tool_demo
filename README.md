@@ -1,13 +1,13 @@
 # Tracking static warnings
 
 ## General Information
-To run the tracking approach, you need to hava Java installed and Python 3 or later.  
+To run the tracking approach, you need to hava Java 17+, Maven 3.9+ installed and Python 3+.  
 
 This tracking tool supports static tools:
 * Spotbugs
 * PMD
 ## Build a jar
-    ./mvn clean install
+    ./mvn clean compile assembly:single
     
 ## Configure git hooks
 Copy `pre-push` and `config.yml` from templates into `<your-project>/.git/hooks`.
