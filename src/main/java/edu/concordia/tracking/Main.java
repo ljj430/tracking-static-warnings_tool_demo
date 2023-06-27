@@ -392,10 +392,10 @@ public class Main {
                     endSPMatcher = System.currentTimeMillis();
                     SpotbugsMatchingTime += endSPMatcher - startSPMatcher;
                 }
-
-                String[] row = {projectPath,chCommit,Long.toString(compilationTime), Long.toString(SpotbugsTime), Long.toString(PMDTime), Long.toString(SpotbugsMatchingTime), Long.toString(PMDMatchingTime)};
-                Path recordPath = Paths.get(savePath,"record.csv");
-                appendCSV(recordPath.toString(),row);
+//    record time execution
+//                String[] row = {projectPath,chCommit,Long.toString(compilationTime), Long.toString(SpotbugsTime), Long.toString(PMDTime), Long.toString(SpotbugsMatchingTime), Long.toString(PMDMatchingTime)};
+//                Path recordPath = Paths.get(savePath,"record.csv");
+//                appendCSV(recordPath.toString(),row);
 
 
             }
