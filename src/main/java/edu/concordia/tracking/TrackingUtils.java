@@ -1,24 +1,33 @@
 package edu.concordia.tracking;
 
 import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.PackageDeclaration;
 import edu.concordia.git.GitProxy;
 import edu.concordia.refactoring.RefactoringFormat;
 import org.apache.commons.io.FilenameUtils;
+import org.eclipse.jgit.api.CheckoutCommand;
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.Edit;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.refactoringminer.utils.RefactoringSet;
 
 import java.io.IOException;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.*;
 import javax.tools.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import static edu.concordia.tracking.ViolationMatcher.initGitRepo;
 
 public class TrackingUtils {
 
@@ -105,7 +114,9 @@ public class TrackingUtils {
             return packageName;
         }
         catch (Exception e){
-            System.out.println(source);
+
+            CompilationUnit cu = getCU17(source);
+//            System.out.println(cu.toString());
             return "";
         }
     }
@@ -125,6 +136,17 @@ public class TrackingUtils {
     public static CompilationUnit getCU(String source){
         JavaParser javaparser = new JavaParser();
         CompilationUnit cu = StaticJavaParser.parse(source);
+//        CompilationUnit cu = StaticJavaParser.parse(source);
+
+        return cu;
+    }
+
+    public static CompilationUnit getCU17(String source){
+        JavaParser javaparser = new JavaParser();
+        StaticJavaParser.getParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
+        CompilationUnit cu = StaticJavaParser.parse(source);
+//        CompilationUnit cu = StaticJavaParser.parse(source);
+
         return cu;
     }
 
@@ -158,7 +180,7 @@ public class TrackingUtils {
         return retList;
     }
     public static Boolean isSameButDiffLoc(BugInstance pa,BugInstance ch){
-        if(ch.getViolation().equals(pa.getViolation()) && ch.getClassPath().equals(pa.getClassPath()) && ch.getMethodName().equals(pa.getMethodName()) && ch.getFieldName().equals(pa.getFieldName())){
+        if(ch.getViolation().equals(pa.getViolation()) && ch.getSourcePath().equals(pa.getSourcePath()) && ch.getMethodName().equals(pa.getMethodName()) && ch.getFieldName().equals(pa.getFieldName())){
             return true;
         }
         else{
@@ -299,6 +321,70 @@ public class TrackingUtils {
         return sb.toString();
     }
 
+
+    ///git checkout checkout
+
+    public static void checkoutCommit(String repoPath, String commitId) throws GitAPIException {
+        Path gitPath = Paths.get(repoPath, ".git");
+        String gitProxyPath = gitPath.toString();
+        GitProxy repoProxy = new GitProxy();
+        repoProxy.setURI(gitProxyPath);
+        Git git = new Git(repoProxy.getRepository());
+
+        git.checkout().setName(commitId).call();
+//        try {
+//            Repository repository = openRepository(repoPath);
+//            Git git = new Git(repository);
+//
+//            CheckoutCommand checkoutCommand = git.checkout();
+//            checkoutCommand.setName(commitId);
+//            checkoutCommand.call();
+//
+//            git.close();
+//        } catch (IOException | GitAPIException e) {
+//            e.printStackTrace();
+//        }
+
+
+    }
+
+    public static List<File> findAllJavaFiles(String folderPath) {
+        List<File> javaFiles = new ArrayList<>();
+        File folder = new File(folderPath);
+
+        if (folder.exists() && folder.isDirectory()) {
+            findJavaFiles(folder, javaFiles);
+        } else {
+            System.out.println("Invalid folder path: " + folderPath);
+        }
+
+        return javaFiles;
+    }
+
+    private static void findJavaFiles(File folder, List<File> javaFiles) {
+        File[] files = folder.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile() && file.getName().endsWith(".java")) {
+                    javaFiles.add(file);
+                } else if (file.isDirectory()) {
+                    findJavaFiles(file, javaFiles);
+                }
+            }
+        }
+    }
+
+
+    public static String getFullSource(String filePath) throws IOException {
+
+        Path file = Paths.get(filePath);
+        StringBuilder sourceCode = new StringBuilder();
+        for (String line : Files.readAllLines(file)) {
+            sourceCode.append(line).append(System.lineSeparator());
+        }
+        return sourceCode.toString();
+    }
+
     public static HashMap<String, String> getPaAllSource(GitProxy gitproxy, HashSet<String> changedPaths, HashMap<String,DiffEntry> diffMap, String commit) throws IOException {
         HashMap<String, String> allSource = new HashMap();
 
@@ -311,6 +397,10 @@ public class TrackingUtils {
             }
             allSource.put(changePath,gitproxy.getFileContent(commit,changePath));
         }
+
+
+
+
         return allSource;
     }
 
@@ -319,12 +409,17 @@ public class TrackingUtils {
 
 
         for(String path: changedPaths){
-            DiffEntry d = diffMap.get(path);
-            String changePath = d.getChangeType().equals(DiffEntry.ChangeType.DELETE) ? d.getOldPath() : d.getNewPath();
-            if(d.getChangeType().equals(DiffEntry.ChangeType.RENAME)){
-                changePath = d.getNewPath();
+            try {
+                DiffEntry d = diffMap.get(path);
+                String changePath = d.getChangeType().equals(DiffEntry.ChangeType.DELETE) ? d.getOldPath() : d.getNewPath();
+                if (d.getChangeType().equals(DiffEntry.ChangeType.RENAME)) {
+                    changePath = d.getNewPath();
+                }
+                allSource.put(changePath, gitproxy.getFileContent(commit, changePath));
             }
-            allSource.put(changePath,gitproxy.getFileContent(commit,changePath));
+            catch (NullPointerException npe){
+                ;
+            }
         }
         return allSource;
     }
@@ -356,7 +451,7 @@ public class TrackingUtils {
                 sourcePath = (String) classList.get(1);
                 refactoringType = (String) classList.get(2);
             }
-            if(pa.getRefactoring() && !refactoringType.equals("")){
+            if(pa.isRefactoring() && !refactoringType.equals("")){
                 break;
             }
         }
@@ -402,6 +497,8 @@ public class TrackingUtils {
             pa.setStartLine(String.valueOf(newStart));
             pa.setEndLine(String.valueOf(newEnd));
             refactoringType = ref.getRefactoringType().toString();
+            sourcePath = pathDotToSlash(getClassPath(ref.getRefactoringRight().get(0).getFilePath()));
+            pa.setSourcePath(sourcePath);
         }
 //        System.out.println("pa after set:\n"+pa);
         return new ArrayList(Arrays.asList(pa,sourcePath,refactoringType));
@@ -429,7 +526,8 @@ public class TrackingUtils {
             pa.setMethodName(methodName);
             pa.setStartLine(String.valueOf(newStart));
             pa.setEndLine(String.valueOf(newEnd));
-//            sourcePath = getClassPath(ref.getRefactoringRight().get(0).getFilePath());
+            sourcePath = pathDotToSlash(getClassPath(ref.getRefactoringRight().get(0).getFilePath()));
+            pa.setSourcePath(sourcePath);
             refactoringType = ref.getRefactoringType().toString();
         }
         return new ArrayList(Arrays.asList(pa,sourcePath,refactoringType));
@@ -453,7 +551,8 @@ public class TrackingUtils {
             pa.setFieldName(fieldName);
             pa.setStartLine(String.valueOf(newStart));
             pa.setEndLine(String.valueOf(newEnd));
-//            sourcePath = getClassPath(ref.getRefactoringRight().get(0).getFilePath());
+            sourcePath = pathDotToSlash(getClassPath(ref.getRefactoringRight().get(0).getFilePath()));
+            pa.setSourcePath(sourcePath);
             refactoringType = ref.getRefactoringType().toString();
         }
         return new ArrayList(Arrays.asList(pa,sourcePath,refactoringType));
@@ -481,6 +580,11 @@ public class TrackingUtils {
 
         return tmp;
     }
+
+    public static String  pathDotToSlash(String classPath){
+        String filePath = classPath.replace('.', '/') + ".java";
+        return filePath;
+    }
     //"public xxx( "
     public static String getMethodName(String raw){
         String tmp = raw.replace("public ","");
@@ -506,8 +610,26 @@ public class TrackingUtils {
     }
 
     public static void main(String[] args){
-        String path = "D:\\ThesisProject\\Mutant_Test_Tools\\Jmutator\\Jmutator";
-        String packageName = takeFileName(path);
-        System.out.println(packageName);
+//        String path = "D:\\ThesisProject\\Mutant_Test_Tools\\Jmutator\\Jmutator";
+//        String packageName = takeFileName(path);
+        String sc = "public class PackageInfoExtractor {\n" +
+                "    private void configureAsciidoctorTask(Project project, AbstractAsciidoctorTask asciidoctorTask) {\n" +
+                "        asciidoctorTask.configurations(EXTENSIONS_CONFIGURATION_NAME);\n" +
+                "        configureCommonAttributes(project, asciidoctorTask);\n" +
+                "        configureOptions(asciidoctorTask);\n" +
+                "        configureForkOptions(asciidoctorTask);\n" +
+                "        asciidoctorTask.baseDirFollowsSourceDir();\n" +
+                "        createSyncDocumentationSourceTask(project, asciidoctorTask);\n" +
+                "        if (asciidoctorTask instanceof AsciidoctorTask task) {\n" +
+                "            boolean pdf = task.getName().toLowerCase().contains(\"pdf\");\n" +
+                "            String backend = (!pdf) ? \"spring-html\" : \"spring-pdf\";\n" +
+                "            task.outputOptions((outputOptions) -> outputOptions.backends(backend));\n" +
+                "        }\n" +
+                "    }\n" +
+                "}";
+        System.out.println(getCU(sc).toString());
+
+//        System.out.println(packageName);
     }
 }
+

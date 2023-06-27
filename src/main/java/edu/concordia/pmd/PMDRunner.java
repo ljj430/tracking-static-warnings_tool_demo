@@ -8,7 +8,7 @@ import net.sourceforge.pmd.renderers.RendererFactory;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
-
+import edu.concordia.pmd.CSVExRenderer;
 public class PMDRunner {
 
     public static void runPMD(String inputPath, String rulesetPath, String reportPath) throws ClassNotFoundException {
@@ -52,9 +52,9 @@ public class PMDRunner {
 //        String inputPath ="D:\\ThesisProject\\trackingProjects\\spring-boot\\buildSrc\\src\\main\\java\\org\\springframework\\boot\\build";
 
 
-        String inputPath ="/home/junjie/Desktop/tool_demo_StaticTracker/objects/source/guava";
+        String inputPath ="/home/junjie/Desktop/tool_demo_StaticTracker/objects/fork/guava";
         String rulesetPath = "/home/junjie/Desktop/tool_demo_StaticTracker/ruleset/rulesets.xml";
-        String reportPath = "/home/junjie/Desktop/tool_demo_StaticTracker/results/tmp/violation_pmd.csv";
+        String reportPath = "/home/junjie/Desktop/tool_demo_StaticTracker/results/tmp/PMD_a394b2aea64d90c4cdc3696a82978b460ffbb914.csv";
         runPMD(inputPath,rulesetPath,reportPath);
 
     }

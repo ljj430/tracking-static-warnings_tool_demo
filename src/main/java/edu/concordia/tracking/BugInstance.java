@@ -77,7 +77,7 @@ public class BugInstance implements Cloneable{
         this.violation = violation;
     }
 
-    public Boolean getRefactoring() {
+    public Boolean isRefactoring() {
         return isRefactoring;
     }
 

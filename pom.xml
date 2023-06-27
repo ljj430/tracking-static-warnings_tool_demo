@@ -27,7 +27,7 @@
                 </configuration>
             </plugin>
 
-            <plugin>
+            <!-- <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <appendAssemblyId>false</appendAssemblyId>
@@ -49,15 +49,27 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin> -->
         </plugins>
     </build>
     <dependencies>
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-maven-plugin &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>com.github.spotbugs</groupId>-->
+<!--            <artifactId>spotbugs-maven-plugin</artifactId>-->
+<!--            <version>4.2.0</version>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>net.sf.saxon</groupId>-->
+<!--                    <artifactId>*</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
         <!-- https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-maven-plugin -->
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.2.0</version>
+            <version>4.7.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>net.sf.saxon</groupId>
@@ -103,11 +115,16 @@
             <version>9.1.0.8</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.github.javaparser/javaparser-core -->
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.github.javaparser/javaparser-core &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>com.github.javaparser</groupId>-->
+<!--            <artifactId>javaparser-core</artifactId>-->
+<!--            <version>3.19.0</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-core</artifactId>
-            <version>3.19.0</version>
+            <version>3.25.3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.jgrapht/jgrapht-core -->
