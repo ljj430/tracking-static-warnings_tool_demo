@@ -13,7 +13,7 @@ public class WriterRecordedCSV {
 
         File file = new File(filePath);
         if(!file.exists()){
-            String[] header = {"path","commit","Spotbugs detection time","PMD detection time","Spotbugs tracking time","PMD tracking time"};
+            String[] header = {"path","commit","compilation time","Spotbugs detection time","PMD detection time","Spotbugs tracking time","PMD tracking time"};
             FileOutputStream fos= new FileOutputStream(filePath);
             OutputStreamWriter osw = new OutputStreamWriter(fos);
             CSVWriter w = new CSVWriter(osw);
