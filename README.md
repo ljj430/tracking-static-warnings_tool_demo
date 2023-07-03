@@ -13,9 +13,9 @@ This tracking tool supports static tools:
 Copy `pre-push` and `config.yml` from templates into `<your-project>/.git/hooks`.
 Edit to configure `config.yml`.
 
-    local_repo_path: your project local path
-    report_save_path: save directory path
-    remote_repo_url: your project remote repo url 
+    local_repo_path: the local path of your project
+    report_save_path: the path of directory to save results
+    remote_repo_url: the URL of your repository
     tracking_approach_jar_path:  the tracking approach jar path e.g., ./target/tracking-static-warnings-1.0-SNAPSHOT.jar
     static_tool: 
       name: static tool name
