@@ -29,6 +29,8 @@ with open(yaml_path,'r') as f:
     ruleset_path = tmp["static_tool"]["ruleset_path"]
 
 command = f'java -jar "{tracking_jar_path}" "{static_tool}" "{local_repo_path}" "{report_save_path}" "{ruleset_path}" "{compilation_command}" "{remote_repo_url}"'
+
+
 print("command:",command)
 
 os.system(command)

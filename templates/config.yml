@@ -2,7 +2,7 @@
 # local_repo_path: D:\tmp\jclouds
 # report_save_path: D:\tmp\saveFolder
 # remote_repo_url: https://github.com/jclouds/jclouds
-# tracking_jar_path: D:\tmp\tracking-static-warnings\target\tracking-static-warnings-1.0-SNAPSHOT.jar
+# tracking_approach_jar_path: D:\tmp\tracking-static-warnings\target\tracking-static-warnings-1.0-SNAPSHOT.jar
 # static_tool: 
 #   name: Spotbugs
 #   compilation_command: mvn clean install
