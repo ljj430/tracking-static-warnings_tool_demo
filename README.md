@@ -1,5 +1,14 @@
 # Tracking static warnings
 
+
+## Tool Demo Video
+A tool demo video about StaticTracker
+
+https://www.youtube.com/watch?v=2WMOjoq1Nbs
+
+[![IMAGE ALT TEXT](https://i3.ytimg.com/vi/2WMOjoq1Nbs/maxresdefault.jpg)](https://www.youtube.com/watch?v=2WMOjoq1Nbs "StaticTracker")
+
+
 ## General Information
 To run the tracking approach, you need to hava Java 17+, Maven 3.9+ installed and Python 3+.  
 
